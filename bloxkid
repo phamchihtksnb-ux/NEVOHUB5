@@ -80,23 +80,27 @@ Attack.Pos = function(model,dist) return (Root.Position - mode.Position).Magnitu
 Attack.Dist = function(model,dist) return (Root.Position - model:FindFirstChild("HumanoidRootPart").Position).Magnitude <= dist end
 Attack.DistH = function(model,dist) return (Root.Position - model:FindFirstChild("HumanoidRootPart").Position).Magnitude > dist end
 Attack.Kill = function(model,Succes)
-  if model and Succes and model:FindFirstChild("HumanoidRootPart") and Attack.Alive(model) then
-    if not model:GetAttribute("Locked") then model:SetAttribute("Locked",model.HumanoidRootPart.CFrame) end
-    PosMon = model:GetAttribute("Locked").Position
-    BringEnemy()
-    pcall(function() EquipWeapon(_G.SelectWeapon) end)
-    -- Luon farm dung 10 studs tren dau mob.
-    _tp(model.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(180),0))
+  if model and Succes then
+  if not model:GetAttribute("Locked") then model:SetAttribute("Locked",model.HumanoidRootPart.CFrame) end
+  PosMon = model:GetAttribute("Locked").Position
+  BringEnemy()
+  EquipWeapon(_G.SelectWeapon)
+  local Equipped = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+  local ToolTip = Equipped.ToolTip
+  if ToolTip == "Blox Fruit" then _tp(model.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(90),0)) else _tp(model.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(180),0))end
+  if RandomCFrame then wait(.5)_tp(model.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25)) wait(.5)_tp(model.HumanoidRootPart.CFrame * CFrame.new(25, 30, 0)) wait(.5)_tp(model.HumanoidRootPart.CFrame * CFrame.new(-25, 30 ,0)) wait(.5)_tp(model.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25)) wait(.5)_tp(model.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))end
   end
 end
 Attack.Kill2 = function(model,Succes)
-  if model and Succes and model:FindFirstChild("HumanoidRootPart") and Attack.Alive(model) then
-    if not model:GetAttribute("Locked") then model:SetAttribute("Locked",model.HumanoidRootPart.CFrame) end
-    PosMon = model:GetAttribute("Locked").Position
-    BringEnemy()
-    pcall(function() EquipWeapon(_G.SelectWeapon) end)
-    -- Luon farm dung 10 studs tren dau mob.
-    _tp(model.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(180),0))
+  if model and Succes then
+  if not model:GetAttribute("Locked") then model:SetAttribute("Locked",model.HumanoidRootPart.CFrame) end
+  PosMon = model:GetAttribute("Locked").Position
+  BringEnemy()
+  EquipWeapon(_G.SelectWeapon)
+  local Equipped = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
+  local ToolTip = Equipped.ToolTip
+  if ToolTip == "Blox Fruit" then _tp(model.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(90),0)) else _tp(model.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(180),0))end
+  if RandomCFrame then wait(0.1)_tp(model.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25)) wait(0.1)_tp(model.HumanoidRootPart.CFrame * CFrame.new(25, 30, 0)) wait(0.1)_tp(model.HumanoidRootPart.CFrame * CFrame.new(-25, 30 ,0)) wait(0.1)_tp(model.HumanoidRootPart.CFrame * CFrame.new(0, 30, 25)) wait(0.1)_tp(model.HumanoidRootPart.CFrame * CFrame.new(-25, 30, 0))end
   end
 end
 Attack.KillSea = function(model,Succes)
@@ -1100,6 +1104,13 @@ _tp = function(target)
     local rootPart = character.HumanoidRootPart
     
     pcall(function()
+        if CanBypassTeleport(gg) then
+            BypassTP(gg)
+            task.wait(0.5)
+        end
+    end)
+    
+    pcall(function()
         requestentrance(target)
     end)
     
@@ -1126,7 +1137,7 @@ _tp = function(target)
     end
     
     local distance = (gg.Position - rootPart.Position).Magnitude
-    local tweenInfo = TweenInfo.new(math.max(0.12, distance / math.max(1, (Settings["Tween Speed"] or 350))), Enum.EasingStyle.Linear)
+    local tweenInfo = TweenInfo.new(math.max(0.12, distance / math.max(300, tonumber(Settings["Tween Speed"]) or 300)), Enum.EasingStyle.Linear)
     local tween = game:GetService("TweenService"):Create(block, tweenInfo, {CFrame = gg})    
     
     if plr.Character.Humanoid.Sit == true then
@@ -1967,64 +1978,132 @@ local function IsInSubmergedIsland()
 end
 
 task.spawn(function()
-    while task.wait(0.05) do
-        if not _G.Level then continue end
-        pcall(function()
-            local char = plr.Character
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
-            if not root or not hum or hum.Health <= 0 then return end
+    while task.wait(Sec) do
+        if _G.Level then
+            pcall(function()
+                local char = plr.Character or plr.CharacterAdded:Wait()
+                local Root = char:WaitForChild("HumanoidRootPart")
+                if not Root then return end
 
-            local questUI = plr.PlayerGui.Main.Quest
-            local questData = QuestNeta()
-            if not questData or not questData[1] then return end
+                local level = plr.Data.Level.Value
+                local inSub = IsInSubmergedIsland()
+                local questUI = plr.PlayerGui.Main.Quest
+                local QuestTitle = questUI.Visible and questUI.Container.QuestTitle.Title.Text or ""
 
-            local wantedMob = tostring(questData[1])
-            local title = questUI.Visible and questUI.Container.QuestTitle.Title.Text or ""
+                if level >= 2600 and not inSub and not teleporting and not alreadyTeleported then
+                    teleporting = true
+                    
+                    local npcPos = CFrame.new(-16269.7041, 25.2288494, 1373.65955)
+                    local teleportAttempts = 0
+                    
+                    repeat 
+                        task.wait(Sec)
+                        _tp(npcPos)
+                        teleportAttempts = teleportAttempts + 1
+                    until not _G.Level or (Root.Position - npcPos.Position).Magnitude <= 8 or teleportAttempts > 20
 
-            -- Neu dang cam sai quest thi bo quest ngay.
-            if questUI.Visible and not string.find(title, wantedMob, 1, true) then
-                replicated.Remotes.CommF_:InvokeServer("AbandonQuest")
-                return
-            end
+                    if not _G.Level then 
+                        teleporting = false
+                        return 
+                    end
 
-            -- Chua co quest: teleport den dung NPC va nhan quest.
-            if not questUI.Visible then
-                local qpos = questData[6] or GetQuestPoint()
-                if qpos then
-                    _tp(qpos)
-                    task.wait(0.25)
-                end
-                pcall(function()
-                    replicated.Remotes.CommF_:InvokeServer("StartQuest", questData[3], questData[2])
-                end)
-                return
-            end
+                    task.wait(1)
+                    
+                    pcall(function()
+                        local args = {"TravelToSubmergedIsland"} 
+                        game:GetService("ReplicatedStorage").Modules.Net:FindFirstChild("RF/SubmarineWorkerSpeak"):InvokeServer(unpack(args))
+                    end)
 
-            -- Tim mob trong workspace.Enemies.
-            local target = GetConnectionEnemies(wantedMob)
-            if target and target:FindFirstChild("HumanoidRootPart") and Attack.Alive(target) then
-                -- Dung 10 studs tren mob.
-                _tp(target.HumanoidRootPart.CFrame * CFrame.new(0,10,0) * CFrame.Angles(0,math.rad(180),0))
-                pcall(function() EquipWeapon(_G.SelectWeapon) end)
-                Attack.Kill(target, true)
-                return
-            end
+                    local timeout = tick()
+                    repeat 
+                        task.wait(0.5)
+                        local currentInSub = IsInSubmergedIsland()
+                        local farFromNPC = (Root.Position - npcPos.Position).Magnitude > 50
+                        
+                        if currentInSub or farFromNPC then
+                            break
+                        end
+                    until not _G.Level or tick() - timeout > 15
 
-            -- Khong co mob: den spawn cua mob de load lai.
-            local origin = workspace:FindFirstChild("_WorldOrigin")
-            local spawns = origin and origin:FindFirstChild("EnemySpawns")
-            if spawns then
-                for _,sp in ipairs(spawns:GetChildren()) do
-                    if string.find(sp.Name, wantedMob, 1, true) then
-                        _tp(sp.CFrame * CFrame.new(0,10,0))
-                        break
+                    task.wait(2)
+                    alreadyTeleported = true
+                    teleporting = false
+                    
+                elseif inSub or level < 2600 then
+                    alreadyTeleported = true
+                    teleporting = false
+
+                    local questData = QuestNeta()
+                    
+                    if not questData or not questData[1] then
+                        task.wait(1)
+                        return
+                    end
+                    
+                    if questUI.Visible and not string.find(QuestTitle, questData[1]) then
+                        replicated.Remotes.CommF_:InvokeServer("AbandonQuest")
+                        task.wait(0.2)
+                        return
+                    end
+
+                    if not questUI.Visible then
+                        local questPos = questData[6]
+                        if questPos then
+                            _tp(questPos)
+                            task.wait(2)
+                            
+                            if (Root.Position - questPos.Position).Magnitude <= 10 then
+                                pcall(function()
+                                    replicated.Remotes.CommF_:InvokeServer("StartQuest", questData[3], questData[2])
+                                end)
+                                task.wait(1)
+                            end
+                        else
+                            pcall(function()
+                                replicated.Remotes.CommF_:InvokeServer("StartQuest", questData[3], questData[2])
+                            end)
+                            task.wait(1)
+                        end
+                        return
+                    end
+
+                    local enemyName = questData[1]
+
+                    -- Farm SACH tung bai: chi qua bai khac khi bai hien tai het quai
+                    local cleared = FarmCore.ClearSpot(
+                        enemyName,
+                        function()
+                            return _G.Level and questUI.Visible
+                        end,
+                        function(v)
+                            Attack.Kill(v, _G.Level)
+                        end
+                    )
+
+                    if not cleared then
+                        -- khong thay quai: bay den spawn point roi load quai truoc khi danh
+                        local spawnCF
+                        for _, spawnPoint in pairs(workspace["_WorldOrigin"].EnemySpawns:GetChildren()) do
+                            if string.find(spawnPoint.Name, enemyName) then
+                                spawnCF = spawnPoint.CFrame
+                                break
+                            end
+                        end
+                        if spawnCF then
+                            _tp(spawnCF * CFrame.new(0, 25, 0))
+                            task.wait(0.4)
+                            FarmCore.LoadArea(spawnCF.Position, enemyName, true)
+                        end
                     end
                 end
-            end
-        end)
+            end)
+        else
+            teleporting = false
+            alreadyTeleported = false
+        end
     end
 end)
+
 ClosetMons = Tabs.Main:AddToggle({
 Name = "Auto Farm Nearest", 
 Description = "", 
@@ -4202,7 +4281,7 @@ local ShootGunEvent = Net:WaitForChild("RE/ShootGunEvent")
 local GunValidator = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Validator2")
 
 local Config = {
-    AttackDistance = 100,
+    AttackDistance = 65,
     AttackMobs = true,
     AttackPlayers = true,
     AttackCooldown = 0.001,
@@ -12686,7 +12765,3 @@ Window:Notify({
   Image = "rbxassetid://127729348105692",
   Duration = 5
 })
-
-
-
-**svg**
